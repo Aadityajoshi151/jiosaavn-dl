@@ -75,7 +75,7 @@ def download_song(pos, json, path, album_artists, total=1):
     json["music"] = sanitize(unescape(json["music"]))
 
     # setting the song download path
-    song_path = os.path.join(path, f"{str(pos).zfill(2)}. {json['song']}.m4a")
+    song_path = os.path.join(path, f"{str(pos).zfill(2)}. {json['song']}.mp3")
 
     # checking if the song already exists in the directory
     if(os.path.exists(song_path)):
@@ -95,7 +95,7 @@ def download_song(pos, json, path, album_artists, total=1):
 
             print("Tagging metadata...")
             tagger(
-                json, path, f"{str(pos).zfill(2)}. {json['song']}.m4a", album_artists, pos, total)
+                json, path, f"{str(pos).zfill(2)}. {json['song']}.mp3", album_artists, pos, total)
             print("Done.")
         else:
             print("\nTrack unavailable in your region!")
