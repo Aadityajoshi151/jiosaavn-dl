@@ -6,7 +6,6 @@ import os
 import sys
 import argparse
 from mutagen.mp4 import MP4, MP4Cover
-from pydub import AudioSegment
 
 
 # Jiosaavn API endpoints, credits goes to cyberboysumanjay
