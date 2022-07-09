@@ -1,6 +1,3 @@
-# jiosaavn-dl
-# made by bunny
-
 import requests
 from html import unescape
 from sanitize_filename import sanitize
@@ -9,6 +6,7 @@ import os
 import sys
 import argparse
 from mutagen.mp4 import MP4, MP4Cover
+from pydub import AudioSegment
 
 
 # Jiosaavn API endpoints, credits goes to cyberboysumanjay
@@ -74,14 +72,19 @@ def download_song(pos, json, path, album_artists, total=1):
     json["primary_artists"] = sanitize(unescape(json["primary_artists"]))
     json["music"] = sanitize(unescape(json["music"]))
 
+    choice = input("Do you want to change the song name? (y/n)\n")
+    if choice.lower() == "y":
+        new_name = input("Please enter the new name\n")
+    else:
+        new_name = json['song']
     # setting the song download path
-    song_path = os.path.join(path, f"{str(pos).zfill(2)}. {json['song']}.mp3")
+    song_path = os.path.join(path, f"{new_name}.m4a")
 
     # checking if the song already exists in the directory
     if(os.path.exists(song_path)):
-        print(f"{json['song']} already downloaded.")
+        print(f"{new_name} already downloaded.")
     else:
-        print(f"\nDownloading : {str(pos).zfill(2)}. {json['song']}...")
+        print(f"\nDownloading : {new_name}...")
 
         # checking if the song is available in the region, if yes then proceed to download else prompt the unavailability
         if 'media_preview_url' in json:
@@ -89,22 +92,26 @@ def download_song(pos, json, path, album_artists, total=1):
                 (re.search(r"/\d{3}/\w+_96", json['media_preview_url'].replace(
                     "\\", ""))).group().replace("_96", "_320.mp4")
 
+
             # download the song
             with open(song_path, "wb") as f:
                 f.write(requests.get(link).content)
 
             print("Tagging metadata...")
             tagger(
-                json, path, f"{str(pos).zfill(2)}. {json['song']}.mp3", album_artists, pos, total)
-            print("Done.")
+                json, path, f"{new_name}.m4a", album_artists, new_name, pos, total)
+            
+            print("Tagging complete. Deleting cover...")
+            os.remove("cover.jpg")
+            print("Cover deleted successfully")
         else:
             print("\nTrack unavailable in your region!")
 
 
 # Tags metadata to a track
-def tagger(json, path, name, album_artists, pos=1, total=1):
+def tagger(json, path, name, album_artists, new_name, pos=1, total=1):
     audio = MP4(os.path.join(path, name))
-    audio["\xa9nam"] = json["song"]
+    audio["\xa9nam"] = new_name
     audio["\xa9alb"] = json["album"]
     audio["\xa9ART"] = json["primary_artists"]
     audio["\xa9wrt"] = json["music"]
@@ -198,12 +205,7 @@ if __name__ == "__main__":
         song_json['has_lyrics'] = unescape(song_json['has_lyrics'])
 
         # setting up the song directory
-        song_path = os.path.join(sys.path[0], "Downloads", (song_json["primary_artists"] if song_json["primary_artists"].count(
-            ",") < 2 else "Various Artists") + f" - {song_json['song']} [{song_json['year']}]")
-        try:
-            os.makedirs(song_path)
-        except:
-            pass
+        song_path = os.path.join(sys.path[0])
 
         song_info = f"\n\
                     Track info:\n\
@@ -215,7 +217,6 @@ if __name__ == "__main__":
                     Has lyrics?    : {song_json['has_lyrics']}\n"
 
         print(song_info)
-
         # checking if the cover already exists
         if not os.path.exists(os.path.join(song_path, "cover.jpg")):
             print("\nDownloading the cover...")
