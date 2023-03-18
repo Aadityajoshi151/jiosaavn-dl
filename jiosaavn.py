@@ -99,10 +99,8 @@ def download_song(pos, json, path, album_artists, total=1):
             print("Tagging metadata...")
             tagger(
                 json, path, f"{new_name}.m4a", album_artists, new_name, pos, total)
-            
-            print("Tagging complete. Deleting cover...")
-            os.remove("cover.jpg")
-            print("Cover deleted successfully")
+            #os.remove("cover.jpg")
+            #print("Cover deleted successfully")
         else:
             print("\nTrack unavailable in your region!")
 
@@ -130,6 +128,7 @@ def tagger(json, path, name, album_artists, new_name, pos=1, total=1):
         audio["\xa9lyr"] = lyric_json["lyrics"].replace("<br>", "\n")
 
     # cover artwork tag
+    print("Tagging Artwork...")
     with open(os.path.join(path, "cover.jpg"), "rb") as f:
         audio["covr"] = [MP4Cover(f.read(), imageformat=MP4Cover.FORMAT_JPEG)]
     audio.pop("©too")
@@ -217,11 +216,11 @@ if __name__ == "__main__":
 
         print(song_info)
         # checking if the cover already exists
-        if not os.path.exists(os.path.join(song_path, "cover.jpg")):
-            print("\nDownloading the cover...")
-            with open(os.path.join(song_path, "cover.jpg"), "wb") as f:
-                f.write(requests.get(
-                    song_json["image"].replace("150", "500")).content)
+        # if not os.path.exists(os.path.join(song_path, "cover.jpg")):
+        #     print("\nDownloading the cover...")
+        #     with open(os.path.join(song_path, "cover.jpg"), "wb") as f:
+        #         f.write(requests.get(
+        #             song_json["image"].replace("150", "500")).content)
 
         download_song(1, song_json, song_path, song_json['primary_artists'])
 
